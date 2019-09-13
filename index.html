@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head>
+ <meta charset="UTF-8">
+ <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, shrink-to-fit=no"
+    />
+    <script src="https://kit.fontawesome.com/d7e1e16ae2.js"></script>
+ <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+ <link rel="stylesheet" type="text/css" href="styles.css">
+ <title>New York Times Search</title>
+</head>
+<body>
+ <div class="container">
+   <div class="row">
+     <div class="jumbotron container-fluid text-center">
+       <h1><i class="fa fa-newspaper-o" aria-hidden="true"></i> New York Times Search</h1>
+     </div>
+   </div>
+
+   <div class="row">
+   <div class="col-12">
+     <div class="card">
+       <div class="card-header"><i class="fa fa-newspaper-o" aria-hidden="true"></i> Enter Your Search Here (all fields required)</div>
+         <div class="card-body">
+           <form>
+             <div class="form-group">
+               <label for="searchTerm">Search Term:</label>
+               <input type="text" class="form-control" id="searchTerm" placeholder="Rosevelt">
+             </div>
+             <div class="form-group">
+               <label for="numRecords">Number of Records to Retrieve (Max of 10):</label>
+               <input type="number" class="form-control" id="numRecords" placeholder="5">
+             </div>
+             <div class="form-group">
+               <label for="startDate">Start Year:</label>
+               <input type="text" class="form-control" id="startDate" >
+             </div>
+             <div class="form-group">
+               <label for="endDate">End Year:</label>
+               <input type="text" class="form-control" id="endDate" >
+             </div>
+             <button type="submit" class="btn btn-default submit">Submit</button>
+             <button type="reset" class="btn btn-default reset" id="clearResults">Clear Form</button>
+           </form>
+         </div>
+     </div>
+   </div>
+   <div class="col-12">
+     <div class="card">
+       <div class="card-header"><i class="fa fa-newspaper-o" aria-hidden="true"></i> Search Results</div>
+         <div class="card-body" id="searchResults">
+         </div>
+     </div>
+     </div>
+   </div>
+  </div>
+ </div>
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<script type="text/javascript">
+
+
+
+// **!! Test to confirm that the query URL Works, only uncomment if needed!!**
+
+// var searchTerm = "nasdaq";
+// var apiKey = "i3CLhoOrDO85BXLwQtg491dkQ8Gb6If1";
+// var numRecords = ""; 
+// var startYear = "20190101";
+// var endYear = "20190912";
+// var queryURL = "https://api.nytimes.com/svc/search/v2/articlesearch.json?q=" + searchTerm + "&begin_date=" + startYear + "&end_date=" + endYear + "&api-key=" + apiKey;
+
+
+
+// **!! Right now this only pulls the first record from the response !!**
+//NOTICE: you need to pass the queryURL from the .submit function in order for the display to work. This is a problem
+function displaySearchInfo(queryURL) {
+  $.ajax({
+    url: queryURL,
+    method: "GET"
+  }).then(function(taco) {
+
+    console.log(taco.response);
+
+    var articleDiv = $("<div class = 'card-body'>");
+    
+    // about the article, create <p> for headline, append <p> to article div
+      var articleHeadline = taco.response.docs[0].headline.main;
+      var pOne = $("<p>").text("About: " + articleHeadline);
+      articleDiv.append(pOne);
+      // console.log(articleHeadline);
+
+    //article source, create <p> for source, append <p> to article div
+      var articleSource = taco.response.docs[0].source;
+      var pTwo = $("<p>").text("Source: " + articleSource);
+      articleDiv.append(pTwo);
+      // console.log(articleSource);
+    
+    // same as above
+      var articleSourceType = taco.response.docs[0].document_type;
+      var pThree = $("<p>").text("Article Type: " + articleSourceType);
+      articleDiv.append(pThree);
+      // console.log(articleSourceType);
+
+    // same as above
+      var publicationDate = taco.response.docs[0].pub_date;
+      var pFour = $("<p>").text("Publication Date: " + publicationDate);
+      articleDiv.append(pFour);
+      // console.log(publicationDate);
+
+    // same as above
+      var articleURL = taco.response.docs[0].web_url;
+      var articleLink = $("<a>").attr('href', articleURL).text("Click Here to View the Article");
+      articleDiv.append(articleLink);
+      // console.log(articleURL);
+
+      $("#searchResults").append(articleDiv);
+
+    }
+  )}
+
+//This code is executed upon clicking the "submit" button on the screen
+$('form').submit(function(){
+
+//NYT requires a full date in order to query the time period, so we use this to append to the year the users enter
+var startFix = "0101";
+var endFix = "1231";
+
+var apiKey = "i3CLhoOrDO85BXLwQtg491dkQ8Gb6If1";
+//pulling from the boot strap form, and storing in variables to be strung together for queryURL
+var searchTerm = $("#searchTerm").val();
+var numRecords = $("#numRecords").val();
+var startYearEntry = $("#startDate").val();
+var endYearEntry = $("#endDate").val();
+var startYear = startYearEntry + startFix;
+var endYear = endYearEntry + endFix;
+var queryURL = "https://api.nytimes.com/svc/search/v2/articlesearch.json?q=" + searchTerm + "&begin_date=" + startYear + "&end_date=" + endYear + "&api-key=" + apiKey;
+
+
+//Run the displaySearchInfo function, pass the queryURL generated by form.submit(), and display the articles to the HTML
+displaySearchInfo(queryURL);
+
+//Return false is required so that the page does not refresh when you submit. If it did refresh, nothing would be displayed
+return false;
+})
+
+//function for clearing out the article div
+$('#clearResults').on("click", function(){
+  $("#searchResults").html("")
+});
+
+
+</script>
+
+</body>
